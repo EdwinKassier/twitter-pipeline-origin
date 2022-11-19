@@ -35,18 +35,14 @@ jobs:
       - run: "echo '${{ secrets.TWITTER_KEY }}' > twitter_credentials.json"
         shell: bash
 
-      # Setup gcloud CLI
-      - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+      # Runs a single command using the runners shell
+      - name: Cloud Functions Deploy
+        uses: google-github-actions/deploy-cloud-functions@v0.10.1
         with:
-          version: "290.0.1"
-          service_account_key: ${{ secrets.SA_KEY_JSON }}
+          credentials: ${{ secrets.SA_KEY_JSON }}
+          name: ${{ github.event.repository.name }}
           project_id: ${{ secrets.PROJECT_ID }}
-
-      # Deploy image to Cloud Function
-      - name: Deploy
-        run: |-
-          gcloud functions deploy "$SERVICE_NAME" \
-            --quiet \
-            --runtime python310 \
-            --trigger-http \
-            --entry-point Exract_Twitter_Data
+          # name of our function in our main.py file, defaults to the resource name suffix 
+          entry_point: Exract_Twitter_Data
+          # runtime to use for the function
+          runtime: python310
