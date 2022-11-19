@@ -74,7 +74,7 @@ def upload_df_to_datalake(df):
 
 
 '''
-Entry point for cloud function
+Entry point for cloud function call
 '''
 
 
