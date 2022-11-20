@@ -103,6 +103,11 @@ def Exract_Twitter_Data(request):
         print(exc)
         return 'Failure'
 
-    
+
+'''
+if __name__ == "__main__":
+    result = create_result_df()
+    upload_df_to_datalake(result)
+'''
 
 
