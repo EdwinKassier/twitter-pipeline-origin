@@ -31,7 +31,7 @@ def create_result_df():
 
     """Query the Twitter API and retrieve the trending topics around the top five major population centers in South Africa"""
 
-    retrieval_time = datetime.now().strftime("%m/%d/%Y")
+    retrieval_time = datetime.now().strftime("%Y-%m-%d")
 
     full_set  = []
 
@@ -50,6 +50,8 @@ def create_result_df():
 
     dfItem = pd.DataFrame.from_records(full_set)
 
+    dfItem["tweet_volume"].fillna(0, inplace = True)
+
     print(dfItem.head())
 
     return dfItem
@@ -60,7 +62,7 @@ def upload_df_to_datalake(df):
     
     """Upload the provided df to the data lake (cloud storage, to be used by the next block of code in the Transform and Load step)"""
 
-    retrieval_time = datetime.now().strftime("%m_%d_%Y")
+    retrieval_time = datetime.now().strftime("%Y-%m-%d")
 
     local_filename = f"{retrieval_time}_daily_raw_twitter_data.csv"
 
@@ -137,5 +139,6 @@ if __name__ == "__main__":
     upload_df_to_datalake(result)
     push_data_through_pub_sub(result)
 '''
+
 
 
