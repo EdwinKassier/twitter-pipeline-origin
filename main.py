@@ -1,6 +1,7 @@
 import tweepy
 import pandas as pd
 from google.cloud import storage
+from google.cloud import pubsub_v1
 import os
 import json
 from datetime import datetime
@@ -8,8 +9,14 @@ from datetime import datetime
 major_population_centers = [{"CITY":"CPT","WOEID":1591691},{"CITY":"DUR","WOEID":1580913}
 ,{"CITY":"JHB","WOEID":1582504},{"CITY":"PRY","WOEID":1586638},{"CITY":"ZEV","WOEID":1587677}]
 
+'''GCP Setup'''
 os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = "gcp_credentials.json"
 
+publisher = pubsub_v1.PublisherClient()
+topic_path = publisher.topic_path("edwin-portfolio-358212", "twitter_raw_stream")
+
+
+'''Twitter API setup'''
 with open('twitter_credentials.json') as file:
     data = json.load(file)
     Bearer_Token = data["Bearer_Token"]
@@ -56,7 +63,7 @@ def upload_df_to_datalake(df):
     local_filename = f"{retrieval_time}_daily_raw_twitter_data.csv"
 
     #Save data as a .csv locally
-    df.to_csv('daily_data.csv', encoding='utf-8')
+    df.to_csv('tmp/daily_data.csv', encoding='utf-8')
 
     #Initiate a storage client
     storage_client = storage.Client()
@@ -68,9 +75,27 @@ def upload_df_to_datalake(df):
 
     blob = bucket.blob(local_filename)
 
-    blob.upload_from_filename('daily_data.csv')
+    blob.upload_from_filename('tmp/daily_data.csv')
 
-    os.remove('daily_data.csv')
+    os.remove('tmp/daily_data.csv')
+
+
+def push_data_through_pub_sub(df):
+
+    list_of_jsons = df.to_json(orient='records', lines=True).splitlines()
+
+
+    for line in list_of_jsons:
+        try:
+            print(line)
+            data = str(line).encode('utf-8')
+            # When you publish a message, the client returns a future.
+            future = publisher.publish(topic_path, data)
+            print(future)
+            print(future.result())
+        except Exception as exc:
+            print(exc)
+
 
 
 '''
@@ -104,10 +129,11 @@ def Exract_Twitter_Data(request):
         return 'Failure'
 
 
-'''
+
 if __name__ == "__main__":
     result = create_result_df()
     upload_df_to_datalake(result)
-'''
+    push_data_through_pub_sub(result)
+
 
 
