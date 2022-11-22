@@ -6,6 +6,8 @@ import os
 import json
 from datetime import datetime
 
+import tempfile
+
 major_population_centers = [{"CITY":"CPT","WOEID":1591691},{"CITY":"DUR","WOEID":1580913}
 ,{"CITY":"JHB","WOEID":1582504},{"CITY":"PRY","WOEID":1586638},{"CITY":"ZEV","WOEID":1587677}]
 
@@ -63,7 +65,7 @@ def upload_df_to_datalake(df):
     local_filename = f"{retrieval_time}_daily_raw_twitter_data.csv"
 
     #Save data as a .csv locally
-    df.to_csv('tmp/daily_data.csv', encoding='utf-8')
+    df.to_csv(f'{tempfile.gettempdir()}/daily_data.csv', encoding='utf-8')
 
     #Initiate a storage client
     storage_client = storage.Client()
@@ -75,9 +77,9 @@ def upload_df_to_datalake(df):
 
     blob = bucket.blob(local_filename)
 
-    blob.upload_from_filename('tmp/daily_data.csv')
+    blob.upload_from_filename(f'{tempfile.gettempdir()}/daily_data.csv')
 
-    os.remove('tmp/daily_data.csv')
+    os.remove(f'{tempfile.gettempdir()}/daily_data.csv')
 
 
 def push_data_through_pub_sub(df):
