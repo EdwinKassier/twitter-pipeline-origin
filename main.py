@@ -129,11 +129,11 @@ def Exract_Twitter_Data(request):
         return 'Failure'
 
 
-
+'''
 if __name__ == "__main__":
     result = create_result_df()
     upload_df_to_datalake(result)
     push_data_through_pub_sub(result)
-
+'''
 
 
